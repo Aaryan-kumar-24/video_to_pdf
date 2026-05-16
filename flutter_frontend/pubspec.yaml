@@ -1,0 +1,28 @@
+name: neural_note_gen
+description: Extract unique frames from videos and compile them into a PDF.
+
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  file_picker: ^8.0.0
+  http: ^1.2.0
+  google_fonts: ^6.1.0
+  url_launcher: ^6.2.5
+  lucide_icons: ^0.257.0
+  desktop_drop: ^0.4.4
+  mime: ^1.0.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true

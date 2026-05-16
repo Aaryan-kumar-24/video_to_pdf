@@ -75,11 +75,9 @@ Computer Vision Pipeline + Image Processing Workflow
 
 ## Frontend
 
-- React.js
-- Vite
-- HTML5
-- CSS3
-- JavaScript
+- Flutter
+- Dart
+- HTML5 / CSS3 (for web builds)
 
 ## Backend
 
@@ -303,24 +301,19 @@ Video Input
 ```text
 demo
 │
-├── frontend
-│   ├── public
-│   ├── src
-│   │   ├── App.jsx
-│   │   ├── App.css
-│   │   ├── index.css
-│   │   ├── main.jsx
-│   │   └── assets
-│   │
-│   ├── index.html
-│   ├── package.json
-│   ├── vite.config.js
+├── flutter_frontend
+│   ├── lib
+│   │   ├── main.dart
+│   │   ├── file_helper.dart
+│   │   └── ...
+│   ├── pubspec.yaml
 │   └── README.md
 │
 ├── extracted_pages
 │
 ├── a.py
 ├── server.py
+├── run.sh
 ├── readme.md
 └── __pycache__
 ```
@@ -334,7 +327,7 @@ User Uploads Video
           |
           v
 +----------------------+
-| React Frontend       |
+| Flutter Frontend     |
 +----------+-----------+
            |
            v
@@ -413,26 +406,17 @@ pip install flask opencv-python pillow numpy imagehash mediapipe
 ## Install Frontend Dependencies
 
 ```bash
-cd frontend
-npm install
+cd flutter_frontend
+flutter pub get
 ```
 
 ---
 
-## Run Backend Server
+## Run Full Application
 
 ```bash
-cd ..
-python server.py
-```
-
----
-
-## Run Frontend
-
-```bash
-cd frontend
-npm run dev
+cd /Users/aryankumar/demo
+./run.sh
 ```
 
 ---
@@ -440,7 +424,7 @@ npm run dev
 ## Open in Browser
 
 ```text
-http://localhost:5173
+http://localhost:8082
 ```
 
 ---
