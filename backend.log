@@ -1,7 +1,7 @@
 INFO:     Will watch for changes in these directories: ['/Users/aryankumar/demo']
 INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
-INFO:     Started reloader process [89246] using StatReload
-INFO:     Started server process [89249]
+INFO:     Started reloader process [91138] using StatReload
+INFO:     Started server process [91141]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 Subprocess output: Processing video...
@@ -67,6 +67,6 @@ Saved unique page: extracted_pages/page_10.jpg
 
 Total unique pages: 10
 
-PDF saved as: /var/folders/z8/qzc5f34x75q_y904wzn5kgzr0000gn/T/tmpmuydanrr/output_b751b704e8be420e9ce13c48dfe7f419.pdf
+PDF saved as: /var/folders/z8/qzc5f34x75q_y904wzn5kgzr0000gn/T/tmp69wv4kzh/output_5091a0a927db4e059f5618a19c350ef9.pdf
 
-INFO:     127.0.0.1:54869 - "POST /api/convert HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55079 - "POST /api/convert HTTP/1.1" 200 OK
