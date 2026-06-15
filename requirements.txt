@@ -5,3 +5,5 @@ numpy
 pillow
 imagehash
 mediapipe
+fastapi
+uvicorn
