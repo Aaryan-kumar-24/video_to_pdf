@@ -17,7 +17,12 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
+@app.get("/")
+def home():
+    return {
+        "status": "running",
+        "message": "Video-to-PDF API deployed successfully"
+    }
 @app.post("/api/convert")
 async def convert_video(file: UploadFile = File(...)):
     # Create a unique temporary directory for this conversion
