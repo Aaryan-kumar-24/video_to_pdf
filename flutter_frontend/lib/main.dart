@@ -24,7 +24,7 @@ class NeuralNoteGenApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Neural Note Gen',
+      title: 'Notes Generator',
       theme: ThemeData(
         brightness: Brightness.dark,
         scaffoldBackgroundColor: const Color(0xFF050505),
@@ -304,7 +304,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             end: Alignment.bottomRight,
           ).createShader(bounds),
           child: const Text(
-            'Neural Note Gen',
+            'Notes Generator',
             style: TextStyle(
               fontSize: 40,
               fontWeight: FontWeight.w800,
