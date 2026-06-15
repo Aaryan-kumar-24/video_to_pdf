@@ -1,9 +1,8 @@
-flask==3.1.1
-gunicorn==23.0.0
+fastapi
+uvicorn
+python-multipart
 opencv-python-headless
 numpy
 pillow
 imagehash
 mediapipe
-fastapi
-uvicorn
