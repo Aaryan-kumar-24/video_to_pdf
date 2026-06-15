@@ -8,6 +8,7 @@ import subprocess
 from fastapi import FastAPI, UploadFile, File
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 app = FastAPI(
     title="Video-to-PDF API",
@@ -24,29 +25,41 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# ==========================
+# FLUTTER WEB CONFIGURATION
+# ==========================
 
-@app.get("/")
-def home():
-    return {
-        "status": "success",
-        "message": "Video-to-PDF API is running successfully",
-        "docs": "/docs"
-    }
+STATIC_DIR = "static"
+
+if os.path.exists(STATIC_DIR):
+    app.mount(
+        "/assets",
+        StaticFiles(directory="static/assets"),
+        name="assets"
+    )
+
+    if os.path.exists("static/canvaskit"):
+        app.mount(
+            "/canvaskit",
+            StaticFiles(directory="static/canvaskit"),
+            name="canvaskit"
+        )
 
 
 @app.get("/health")
 def health():
-    return {
-        "status": "healthy"
-    }
+    return {"status": "healthy"}
 
+
+# ==========================
+# API ENDPOINT
+# ==========================
 
 @app.post("/api/convert")
 async def convert_video(file: UploadFile = File(...)):
     temp_dir = tempfile.mkdtemp()
 
     try:
-        # Save uploaded video
         extension = os.path.splitext(file.filename)[1]
 
         if not extension:
@@ -60,13 +73,11 @@ async def convert_video(file: UploadFile = File(...)):
         with open(video_path, "wb") as buffer:
             shutil.copyfileobj(file.file, buffer)
 
-        # Output PDF
         pdf_path = os.path.join(
             temp_dir,
             f"output_{uuid.uuid4().hex}.pdf"
         )
 
-        # Path to a.py
         current_dir = os.path.dirname(
             os.path.abspath(__file__)
         )
@@ -84,7 +95,6 @@ async def convert_video(file: UploadFile = File(...)):
                 }
             )
 
-        # Execute a.py
         result = subprocess.run(
             [
                 sys.executable,
@@ -135,10 +145,38 @@ async def convert_video(file: UploadFile = File(...)):
         )
 
 
+# ==========================
+# FLUTTER WEB ROUTES
+# ==========================
+
+@app.get("/")
+async def frontend():
+    return FileResponse("static/index.html")
+
+
+@app.get("/{full_path:path}")
+async def serve_flutter(full_path: str):
+
+    file_path = os.path.join(
+        "static",
+        full_path
+    )
+
+    if os.path.isfile(file_path):
+        return FileResponse(file_path)
+
+    return FileResponse("static/index.html")
+
+
 if __name__ == "__main__":
     import uvicorn
 
-    port = int(os.environ.get("PORT", 8000))
+    port = int(
+        os.environ.get(
+            "PORT",
+            8000
+        )
+    )
 
     uvicorn.run(
         "server:app",
