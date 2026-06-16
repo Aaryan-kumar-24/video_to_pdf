@@ -1,24 +1,24 @@
-INFO:     Started server process [31891]
+INFO:     Started server process [33542]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
 STDOUT:
 Processing video...
-Saved unique page: static/sessions/6e755f213e5e4f1eb9efed728109a28c/pages/page_1.jpg
+Saved unique page: static/sessions/ef98b68200284c6b82ba7105f0472016/pages/page_1.jpg
 Hash Difference: 22
-Saved unique page: static/sessions/6e755f213e5e4f1eb9efed728109a28c/pages/page_2.jpg
+Saved unique page: static/sessions/ef98b68200284c6b82ba7105f0472016/pages/page_2.jpg
 Hash Difference: 32
 Hash Difference: 22
-Saved unique page: static/sessions/6e755f213e5e4f1eb9efed728109a28c/pages/page_3.jpg
+Saved unique page: static/sessions/ef98b68200284c6b82ba7105f0472016/pages/page_3.jpg
 Hash Difference: 30
 Hash Difference: 32
 Hash Difference: 30
-Saved unique page: static/sessions/6e755f213e5e4f1eb9efed728109a28c/pages/page_4.jpg
+Saved unique page: static/sessions/ef98b68200284c6b82ba7105f0472016/pages/page_4.jpg
 Hash Difference: 24
 Hash Difference: 20
 Hash Difference: 20
 Hash Difference: 34
-Saved unique page: static/sessions/6e755f213e5e4f1eb9efed728109a28c/pages/page_5.jpg
+Saved unique page: static/sessions/ef98b68200284c6b82ba7105f0472016/pages/page_5.jpg
 Hash Difference: 30
 Hash Difference: 28
 Hash Difference: 32
@@ -26,17 +26,13 @@ Hash Difference: 12
 
 Total unique pages: 5
 
-PDF saved as: static/sessions/6e755f213e5e4f1eb9efed728109a28c/original.pdf
+PDF saved as: static/sessions/ef98b68200284c6b82ba7105f0472016/original.pdf
 
 STDERR:
 
-INFO:     127.0.0.1:51657 - "POST /api/convert HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51657 - "GET /sessions/6e755f213e5e4f1eb9efed728109a28c/pages/page_1.jpg HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51657 - "GET /sessions/6e755f213e5e4f1eb9efed728109a28c/pages/page_2.jpg HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51657 - "GET /sessions/6e755f213e5e4f1eb9efed728109a28c/pages/page_3.jpg HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51657 - "GET /sessions/6e755f213e5e4f1eb9efed728109a28c/pages/page_4.jpg HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51657 - "GET /sessions/6e755f213e5e4f1eb9efed728109a28c/pages/page_5.jpg HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51657 - "OPTIONS /regenerate-pdf HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51657 - "POST /regenerate-pdf HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51657 - "GET /sessions/6e755f213e5e4f1eb9efed728109a28c/edited_1781644344.pdf HTTP/1.1" 200 OK
-INFO:     127.0.0.1:51657 - "GET /sessions/6e755f213e5e4f1eb9efed728109a28c/edited_1781644344.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51783 - "POST /api/convert HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51783 - "GET /sessions/ef98b68200284c6b82ba7105f0472016/pages/page_1.jpg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51783 - "GET /sessions/ef98b68200284c6b82ba7105f0472016/pages/page_2.jpg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51783 - "GET /sessions/ef98b68200284c6b82ba7105f0472016/pages/page_3.jpg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51783 - "GET /sessions/ef98b68200284c6b82ba7105f0472016/pages/page_4.jpg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51783 - "GET /sessions/ef98b68200284c6b82ba7105f0472016/pages/page_5.jpg HTTP/1.1" 200 OK

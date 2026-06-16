@@ -1,4 +1,5 @@
 import 'dart:ui';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lucide_icons/lucide_icons.dart';
@@ -78,15 +79,15 @@ class _PdfActionsScreenState extends State<PdfActionsScreen>
   }
 
   void _showShareSheet() {
-    if (checkCanShareFiles()) {
-      handleShare(widget.pdfUrl, 'converted_notes.pdf');
-    } else {
+    if (kIsWeb) {
       showModalBottomSheet(
         context: context,
         backgroundColor: Colors.transparent,
         isScrollControlled: true,
         builder: (_) => _ShareBottomSheet(pdfUrl: widget.pdfUrl),
       );
+    } else {
+      handleShare(widget.pdfUrl, 'converted_notes.pdf');
     }
   }
 

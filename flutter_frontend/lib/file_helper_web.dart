@@ -1,5 +1,4 @@
 import 'dart:html' as html;
-import 'dart:js' as js;
 
 void previewImpl(String url, String filename) {
   html.window.open(url, '_blank');
@@ -30,59 +29,9 @@ void downloadImpl(String url, String filename) async {
   }
 }
 
-void _initJs() {
-  js.context.callMethod('eval', ["""
-    window.webCanShareFiles = function() {
-      try {
-        if (navigator.canShare) {
-          const file = new File([], 'test.pdf', { type: 'application/pdf' });
-          return navigator.canShare({ files: [file] });
-        }
-      } catch (e) {}
-      return false;
-    };
-
-    window.webShareFile = function(url, filename, fallbackUrl) {
-      return fetch(url)
-        .then(function(response) { return response.arrayBuffer(); })
-        .then(function(buffer) {
-          const file = new File([buffer], filename, { type: 'application/pdf' });
-          if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            return navigator.share({
-              files: [file],
-              title: filename
-            });
-          }
-          throw new Error('Not shareable');
-        })
-        .catch(function(err) {
-          console.error('Web share failed, copying to clipboard as fallback: ', err);
-          if (navigator.clipboard) {
-            navigator.clipboard.writeText(fallbackUrl);
-          }
-        });
-    };
-  """]);
-}
-
 void shareImpl(String url, String filename) {
-  try {
-    _initJs();
-    js.context.callMethod('webShareFile', [url, filename, url]);
-  } catch (e) {
-    // Fallback: Copy URL to clipboard
-    html.window.navigator.clipboard?.writeText(url);
-  }
-}
-
-bool canShareFilesImpl() {
-  try {
-    _initJs();
-    return js.context.callMethod('webCanShareFiles') as bool;
-  } catch (e) {
-    // ignore
-  }
-  return false;
+  // Copy URL to clipboard as a basic fallback (share dialog is in pdf_actions_screen.dart)
+  html.window.navigator.clipboard?.writeText(url);
 }
 
 /// Open a URL in a new tab (used by the custom share sheet).
