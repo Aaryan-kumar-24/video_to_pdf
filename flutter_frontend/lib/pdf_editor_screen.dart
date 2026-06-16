@@ -49,6 +49,9 @@ class _PdfEditorScreenState extends State<PdfEditorScreen> {
   String _loadingText = '';
   bool _isEdited = false;
 
+  // Undo stack: stores (deleted page, index it was at)
+  final List<({EditablePage page, int index})> _deletedPagesStack = [];
+
   @override
   void initState() {
     super.initState();
@@ -103,12 +106,28 @@ class _PdfEditorScreenState extends State<PdfEditorScreen> {
       );
       return;
     }
+    final deletedPage = _pages[index];
     setState(() {
       _pages.removeAt(index);
+      _deletedPagesStack.add((page: deletedPage, index: index));
       _isDirty = true;
       _isEdited = true;
     });
-    _showSnackBar("Page removed. Click the 'Done' button on the top right when you are finished editing.");
+  }
+
+  void _undoLastDelete() {
+    if (_deletedPagesStack.isEmpty) return;
+    final last = _deletedPagesStack.removeLast();
+    setState(() {
+      // Re-insert at the original index, clamped to current list bounds
+      final insertAt = last.index.clamp(0, _pages.length);
+      _pages.insert(insertAt, last.page);
+      // If all deletions are undone, mark as clean
+      if (_deletedPagesStack.isEmpty) {
+        _isDirty = false;
+        _isEdited = false;
+      }
+    });
   }
 
   Future<bool> _regeneratePdfIfNeeded() async {
@@ -333,19 +352,28 @@ class _PdfEditorScreenState extends State<PdfEditorScreen> {
           ),
           centerTitle: false,
           actions: [
-            if (_isEdited)
-              TextButton.icon(
-                onPressed: _isLoading ? null : _handleDoneEditing,
-                icon: const Icon(LucideIcons.checkCircle, color: Color(0xFF34D399), size: 20),
-                label: Text(
-                  'Done',
-                  style: TextStyle(
-                    color: const Color(0xFF34D399),
-                    fontWeight: FontWeight.bold,
-                    fontSize: isMobile ? 14 : 16,
-                  ),
+            if (_deletedPagesStack.isNotEmpty)
+              IconButton(
+                onPressed: _isLoading ? null : _undoLastDelete,
+                tooltip: 'Undo last delete',
+                icon: const Icon(LucideIcons.undo2, color: Color(0xFFFBBF24), size: 20),
+              ),
+            TextButton.icon(
+              onPressed: _isLoading ? null : _handleDoneEditing,
+              icon: Icon(
+                LucideIcons.checkCircle,
+                color: _isLoading ? Colors.white38 : const Color(0xFF34D399),
+                size: 20,
+              ),
+              label: Text(
+                'Done',
+                style: TextStyle(
+                  color: _isLoading ? Colors.white38 : const Color(0xFF34D399),
+                  fontWeight: FontWeight.bold,
+                  fontSize: isMobile ? 14 : 16,
                 ),
               ),
+            ),
             const SizedBox(width: 8),
           ],
         ),
@@ -579,6 +607,8 @@ class _PdfEditorScreenState extends State<PdfEditorScreen> {
                     },
                   ),
                 ),
+
+
               ],
             ),
 
