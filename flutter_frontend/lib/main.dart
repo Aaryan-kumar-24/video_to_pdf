@@ -235,13 +235,15 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
 
   Future<void> _handleDownload() async {
     if (_pdfUrl != null) {
-      handleDownload(_pdfUrl!, 'converted_notes.pdf');
+      final filename = getFilenameFromUrl(_pdfUrl!);
+      handleDownload(_pdfUrl!, filename);
     }
   }
 
   Future<void> _handleShare() async {
     if (_pdfUrl != null) {
-      handleShare(_pdfUrl!, 'converted_notes.pdf');
+      final filename = getFilenameFromUrl(_pdfUrl!);
+      handleShare(_pdfUrl!, filename);
     }
   }
 

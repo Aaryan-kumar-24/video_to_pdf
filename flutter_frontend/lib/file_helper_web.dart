@@ -1,4 +1,6 @@
 import 'dart:html' as html;
+import 'package:http/http.dart' as http;
+import 'package:share_plus/share_plus.dart';
 
 void previewImpl(String url, String filename) {
   html.window.open(url, '_blank');
@@ -29,9 +31,23 @@ void downloadImpl(String url, String filename) async {
   }
 }
 
-void shareImpl(String url, String filename) {
-  // Copy URL to clipboard as a basic fallback (share dialog is in pdf_actions_screen.dart)
-  html.window.navigator.clipboard?.writeText(url);
+void shareImpl(String url, String filename) async {
+  try {
+    final response = await http.get(Uri.parse(url));
+    final bytes = response.bodyBytes;
+    final xFile = XFile.fromData(
+      bytes,
+      mimeType: 'application/pdf',
+      name: filename,
+    );
+    await Share.shareXFiles(
+      [xFile],
+      subject: filename,
+    );
+  } catch (e) {
+    // Copy URL to clipboard as a basic fallback
+    html.window.navigator.clipboard?.writeText(url);
+  }
 }
 
 /// Open a URL in a new tab (used by the custom share sheet).

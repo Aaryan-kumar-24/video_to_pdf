@@ -72,10 +72,15 @@ void shareImpl(String url, String filename) async {
   try {
     final file = await _downloadFile(url, filename);
     await Share.shareXFiles(
-      [XFile(file.path, mimeType: 'application/pdf')],
+      [XFile(file.path, mimeType: 'application/pdf', name: filename)],
       subject: filename,
     );
   } catch (e) {
-    print('Failed to share: $e');
+    print('Failed to share file: $e. Falling back to sharing link.');
+    try {
+      await Share.share(url, subject: filename);
+    } catch (e2) {
+      print('Failed to share link: $e2');
+    }
   }
 }

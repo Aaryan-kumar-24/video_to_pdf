@@ -13,3 +13,18 @@ void handleDownload(String url, String filename) {
 void handleShare(String url, String filename) {
   shareImpl(url, filename);
 }
+
+String getFilenameFromUrl(String url) {
+  try {
+    final uri = Uri.parse(url);
+    if (uri.pathSegments.isNotEmpty) {
+      final lastSegment = uri.pathSegments.last;
+      if (lastSegment.toLowerCase().endsWith('.pdf')) {
+        return lastSegment;
+      } else {
+        return '$lastSegment.pdf';
+      }
+    }
+  } catch (_) {}
+  return 'converted_notes.pdf';
+}
