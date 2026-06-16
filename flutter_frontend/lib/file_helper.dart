@@ -13,3 +13,7 @@ void handleDownload(String url, String filename) {
 void handleShare(String url, String filename) {
   shareImpl(url, filename);
 }
+
+bool checkCanShareFiles() {
+  return canShareFilesImpl();
+}

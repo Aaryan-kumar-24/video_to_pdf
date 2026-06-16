@@ -79,3 +79,7 @@ void shareImpl(String url, String filename) async {
     print('Failed to share: $e');
   }
 }
+
+bool canShareFilesImpl() {
+  return true;
+}

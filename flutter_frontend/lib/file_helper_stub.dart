@@ -9,3 +9,7 @@ void downloadImpl(String url, String filename) {
 void shareImpl(String url, String filename) {
   throw UnsupportedError('Cannot share on this platform');
 }
+
+bool canShareFilesImpl() {
+  return false;
+}

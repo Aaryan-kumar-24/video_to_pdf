@@ -78,12 +78,16 @@ class _PdfActionsScreenState extends State<PdfActionsScreen>
   }
 
   void _showShareSheet() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      builder: (_) => _ShareBottomSheet(pdfUrl: widget.pdfUrl),
-    );
+    if (checkCanShareFiles()) {
+      handleShare(widget.pdfUrl, 'converted_notes.pdf');
+    } else {
+      showModalBottomSheet(
+        context: context,
+        backgroundColor: Colors.transparent,
+        isScrollControlled: true,
+        builder: (_) => _ShareBottomSheet(pdfUrl: widget.pdfUrl),
+      );
+    }
   }
 
   void _goHome() {
