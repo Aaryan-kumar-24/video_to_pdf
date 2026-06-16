@@ -76221,7 +76221,7 @@ return A.ck(s,A.v1(A.ck(s,s,B.o,B.E,s,s,s,s,s,s,s,s,s),q),B.o,s,s,new A.c0(r,s,s
 Zq(){var s,r=null,q=this.c
 q.toString
 s=A.bs(q,r,t.w).w.a.a<600
-q=A.atK(A.c5("Notes Generator",r,A.bW(r,r,B.e,r,r,r,r,r,r,r,r,s?28:40,r,r,B.dD,r,r,!0,r,-0.8,r,r,r,r,r,r),r),new A.agf())
+q=A.atK(A.c5("Notes bhejo",r,A.bW(r,r,B.e,r,r,r,r,r,r,r,r,s?28:40,r,r,B.dD,r,r,!0,r,-0.8,r,r,r,r,r,r),r),new A.agf())
 return A.dA(A.c([q,B.d_,A.c5("Extract unique frames from videos and compile them into a PDF",r,A.bW(r,r,B.bs,r,r,r,r,r,r,r,r,s?13.5:16.8,r,r,B.dC,r,r,!0,r,r,r,r,r,r,r,r),B.aT)],t.p),B.C,B.y,B.G)},
 Zo(){var s,r,q,p,o,n,m,l,k,j,i,h,g,f=this,e=null
 if(f.w!=null)return f.Zz()
