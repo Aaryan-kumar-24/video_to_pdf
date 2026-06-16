@@ -16,9 +16,9 @@ PDF_NAME = sys.argv[2] if len(sys.argv) > 2 else "notes_output.pdf"
 
 OUTPUT_FOLDER = sys.argv[3] if len(sys.argv) > 3 else "extracted_pages"
 
-FRAME_SKIP = 30
+FRAME_SKIP = 26
 
-HASH_THRESHOLD = 18
+HASH_THRESHOLD = 17
 
 BLUR_THRESHOLD = 100
 
