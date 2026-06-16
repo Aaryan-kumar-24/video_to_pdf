@@ -2,3 +2,33 @@ INFO:     Started server process [10652]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+STDOUT:
+Processing video...
+Saved unique page: static/sessions/0a88da89b58b481aa819bcdf991c893f/pages/page_1.jpg
+Hash Difference: 26
+Saved unique page: static/sessions/0a88da89b58b481aa819bcdf991c893f/pages/page_2.jpg
+Hash Difference: 24
+Hash Difference: 30
+Saved unique page: static/sessions/0a88da89b58b481aa819bcdf991c893f/pages/page_3.jpg
+Hash Difference: 30
+Hash Difference: 18
+Hash Difference: 24
+Saved unique page: static/sessions/0a88da89b58b481aa819bcdf991c893f/pages/page_4.jpg
+Hash Difference: 26
+Hash Difference: 26
+Hash Difference: 34
+Hash Difference: 26
+Saved unique page: static/sessions/0a88da89b58b481aa819bcdf991c893f/pages/page_5.jpg
+
+Total unique pages: 5
+
+PDF saved as: static/sessions/0a88da89b58b481aa819bcdf991c893f/original.pdf
+
+STDERR:
+
+INFO:     127.0.0.1:50225 - "POST /api/convert HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50225 - "GET /sessions/0a88da89b58b481aa819bcdf991c893f/pages/page_1.jpg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50225 - "GET /sessions/0a88da89b58b481aa819bcdf991c893f/pages/page_2.jpg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50225 - "GET /sessions/0a88da89b58b481aa819bcdf991c893f/pages/page_3.jpg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50225 - "GET /sessions/0a88da89b58b481aa819bcdf991c893f/pages/page_4.jpg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:50225 - "GET /sessions/0a88da89b58b481aa819bcdf991c893f/pages/page_5.jpg HTTP/1.1" 200 OK
