@@ -12,9 +12,9 @@ import sys
 
 VIDEO_PATH = sys.argv[1] if len(sys.argv) > 1 else "demo1.mp4"
 
-OUTPUT_FOLDER = "extracted_pages"
-
 PDF_NAME = sys.argv[2] if len(sys.argv) > 2 else "notes_output.pdf"
+
+OUTPUT_FOLDER = sys.argv[3] if len(sys.argv) > 3 else "extracted_pages"
 
 FRAME_SKIP = 30
 

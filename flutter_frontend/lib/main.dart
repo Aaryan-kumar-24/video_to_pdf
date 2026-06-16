@@ -9,10 +9,27 @@ import 'package:http_parser/http_parser.dart';
 import 'package:mime/mime.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lucide_icons/lucide_icons.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'dart:ui';
-import 'dart:typed_data';
+import 'package:flutter/foundation.dart';
+import 'package:image_picker/image_picker.dart';
 import 'file_helper.dart';
+import 'pdf_editor_screen.dart';
+
+String getApiBaseUrl() {
+  if (kIsWeb) {
+    final origin = Uri.base.origin;
+    if (origin.contains('localhost') || origin.contains('127.0.0.1')) {
+      return 'http://localhost:8000';
+    }
+    return origin;
+  }
+  try {
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      return 'http://10.0.2.2:8000';
+    }
+  } catch (_) {}
+  return 'http://localhost:8000';
+}
 
 void main() {
   runApp(const NeuralNoteGenApp());
@@ -50,7 +67,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
   PlatformFile? _selectedFile;
   Uint8List? _fileBytes;
   
-  Uint8List? _pdfBytes;
+  String? _pdfUrl;
   String? _error;
 
   late AnimationController _orbController;
@@ -86,6 +103,30 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     }
   }
 
+  Future<void> _recordVideo() async {
+    setState(() => _error = null);
+    try {
+      final ImagePicker picker = ImagePicker();
+      final XFile? video = await picker.pickVideo(
+        source: ImageSource.camera,
+        maxDuration: const Duration(minutes: 10),
+      );
+
+      if (video != null) {
+        final bytes = await video.readAsBytes();
+        final size = bytes.length;
+        _validateAndSetFile(PlatformFile(
+          name: video.name,
+          size: size,
+          bytes: bytes,
+          path: kIsWeb ? null : video.path,
+        ));
+      }
+    } catch (e) {
+      setState(() => _error = 'Failed to record video: $e');
+    }
+  }
+
   void _validateAndSetFile(PlatformFile file) {
     setState(() => _error = null);
     
@@ -95,7 +136,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
       setState(() {
         _selectedFile = file;
         _fileBytes = file.bytes;
-        _pdfBytes = null;
+        _pdfUrl = null;
       });
     } else {
       setState(() => _error = 'Please select a valid video file.');
@@ -106,7 +147,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     setState(() {
       _selectedFile = null;
       _fileBytes = null;
-      _pdfBytes = null;
+      _pdfUrl = null;
       _error = null;
     });
   }
@@ -120,10 +161,11 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
     });
 
     try {
-var request = http.MultipartRequest(
-  'POST',
-  Uri.parse('https://pdf-generator-32u0.onrender.com/api/convert'),
-);
+      final baseUrl = getApiBaseUrl();
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('$baseUrl/api/convert'),
+      );
 
       // If bytes are available (web or withData: true), use fromBytes
       if (_fileBytes != null) {
@@ -149,9 +191,31 @@ var request = http.MultipartRequest(
         throw Exception('Conversion failed. Please try again.');
       }
 
-      setState(() {
-        _pdfBytes = response.bodyBytes;
-      });
+      final Map<String, dynamic> data = json.decode(response.body);
+      
+      if (mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PdfEditorScreen(
+              sessionId: data['session_id'],
+              pdfUrl: data['pdf_url'],
+              initialPages: List<Map<String, dynamic>>.from(data['pages']),
+              apiBaseUrl: baseUrl,
+            ),
+          ),
+        ).then((result) {
+          if (result != null && result is Map) {
+            setState(() {
+              _pdfUrl = result['pdf_url'];
+            });
+          } else {
+            setState(() {
+              _pdfUrl = data['pdf_url'];
+            });
+          }
+        });
+      }
     } catch (err) {
       setState(() {
         _error = err.toString().replaceFirst('Exception: ', '');
@@ -164,14 +228,20 @@ var request = http.MultipartRequest(
   }
 
   Future<void> _handlePreview() async {
-    if (_pdfBytes != null) {
-      handlePreview(_pdfBytes!, 'converted_notes.pdf');
+    if (_pdfUrl != null) {
+      handlePreview(_pdfUrl!, 'converted_notes.pdf');
     }
   }
 
   Future<void> _handleDownload() async {
-    if (_pdfBytes != null) {
-       handleDownload(_pdfBytes!, 'converted_notes.pdf');
+    if (_pdfUrl != null) {
+      handleDownload(_pdfUrl!, 'converted_notes.pdf');
+    }
+  }
+
+  Future<void> _handleShare() async {
+    if (_pdfUrl != null) {
+      handleShare(_pdfUrl!, 'converted_notes.pdf');
     }
   }
 
@@ -184,6 +254,10 @@ var request = http.MultipartRequest(
 
   @override
   Widget build(BuildContext context) {
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final bool isMobile = screenWidth < 600;
+    final bool isTablet = screenWidth >= 600 && screenWidth < 1024;
+
     return Scaffold(
       body: Stack(
         children: [
@@ -196,12 +270,12 @@ var request = http.MultipartRequest(
                   Positioned(
                     top: -100 + (50 * _orbController.value),
                     left: -100 + (50 * _orbController.value),
-                    child: _buildOrb(const Color(0xFF8B5CF6), 400),
+                    child: _buildOrb(const Color(0xFF8B5CF6), isMobile ? 250 : 400),
                   ),
                   Positioned(
                     bottom: -150 - (30 * _orbController.value),
                     right: -100 + (80 * _orbController.value),
-                    child: _buildOrb(const Color(0xFF3B82F6), 500),
+                    child: _buildOrb(const Color(0xFF3B82F6), isMobile ? 300 : 500),
                   ),
                 ],
               );
@@ -212,7 +286,7 @@ var request = http.MultipartRequest(
           Center(
             child: SingleChildScrollView(
               child: Padding(
-                padding: const EdgeInsets.all(32.0),
+                padding: EdgeInsets.all(isMobile ? 16.0 : (isTablet ? 24.0 : 32.0)),
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 600),
                   child: DropTarget(
@@ -236,7 +310,7 @@ var request = http.MultipartRequest(
                     child: Container(
                       decoration: BoxDecoration(
                         color: const Color.fromRGBO(20, 20, 25, 0.6),
-                        borderRadius: BorderRadius.circular(32),
+                        borderRadius: BorderRadius.circular(isMobile ? 24 : 32),
                         border: Border.all(color: Colors.white.withOpacity(0.08)),
                         boxShadow: const [
                           BoxShadow(
@@ -248,20 +322,20 @@ var request = http.MultipartRequest(
                         ],
                       ),
                       child: ClipRRect(
-                        borderRadius: BorderRadius.circular(32),
+                        borderRadius: BorderRadius.circular(isMobile ? 24 : 32),
                         child: BackdropFilter(
                           filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
                           child: Padding(
-                            padding: const EdgeInsets.all(48.0),
+                            padding: EdgeInsets.all(isMobile ? 24.0 : (isTablet ? 36.0 : 48.0)),
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 _buildHeader(),
                                 if (_error != null) ...[
-                                  const SizedBox(height: 24),
+                                  SizedBox(height: isMobile ? 18 : 24),
                                   _buildError(),
                                 ],
-                                const SizedBox(height: 32),
+                                SizedBox(height: isMobile ? 24 : 32),
                                 _buildDynamicContent(),
                               ],
                             ),
@@ -295,6 +369,9 @@ var request = http.MultipartRequest(
   }
 
   Widget _buildHeader() {
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final bool isMobile = screenWidth < 600;
+
     return Column(
       children: [
         ShaderMask(
@@ -303,10 +380,10 @@ var request = http.MultipartRequest(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ).createShader(bounds),
-          child: const Text(
+          child: Text(
             'Notes Generator',
             style: TextStyle(
-              fontSize: 40,
+              fontSize: isMobile ? 28 : 40,
               fontWeight: FontWeight.w800,
               color: Colors.white,
               letterSpacing: -0.8,
@@ -314,13 +391,13 @@ var request = http.MultipartRequest(
           ),
         ),
         const SizedBox(height: 8),
-        const Text(
+        Text(
           'Extract unique frames from videos and compile them into a PDF',
           textAlign: TextAlign.center,
           style: TextStyle(
-            fontSize: 16.8,
+            fontSize: isMobile ? 13.5 : 16.8,
             fontWeight: FontWeight.w300,
-            color: Color(0xFF9CA3AF),
+            color: const Color(0xFF9CA3AF),
           ),
         ),
       ],
@@ -328,21 +405,24 @@ var request = http.MultipartRequest(
   }
 
   Widget _buildError() {
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final bool isMobile = screenWidth < 600;
+
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(isMobile ? 12 : 16),
       decoration: BoxDecoration(
         color: const Color.fromRGBO(220, 38, 38, 0.15),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(12),
         border: Border.all(color: const Color.fromRGBO(220, 38, 38, 0.3)),
       ),
       child: Row(
         children: [
-          const Icon(LucideIcons.alertCircle, color: Color(0xFFFCA5A5), size: 20),
-          const SizedBox(width: 12),
+          Icon(LucideIcons.alertCircle, color: const Color(0xFFFCA5A5), size: isMobile ? 18 : 20),
+          SizedBox(width: isMobile ? 10 : 12),
           Expanded(
             child: Text(
               _error!,
-              style: const TextStyle(color: Color(0xFFFCA5A5), fontSize: 15),
+              style: TextStyle(color: const Color(0xFFFCA5A5), fontSize: isMobile ? 13 : 15),
             ),
           ),
         ],
@@ -351,7 +431,7 @@ var request = http.MultipartRequest(
   }
 
   Widget _buildDynamicContent() {
-    if (_pdfBytes != null) {
+    if (_pdfUrl != null) {
       return _buildSuccessState();
     } else if (_isProcessing) {
       return _buildProcessingState();
@@ -363,78 +443,105 @@ var request = http.MultipartRequest(
   }
 
   Widget _buildUploadState() {
-    return GestureDetector(
-      onTap: _pickFile,
-      child: MouseRegion(
-        cursor: SystemMouseCursors.click,
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          padding: const EdgeInsets.symmetric(vertical: 56, horizontal: 32),
-          decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: _isDragging 
-                  ? const Color(0xFF8B5CF6) 
-                  : Colors.white.withOpacity(0.15),
-              width: 2,
-              style: BorderStyle.solid,
-            ),
-            boxShadow: _isDragging
-                ? [
-                    const BoxShadow(
-                      color: Color.fromRGBO(139, 92, 246, 0.3),
-                      blurRadius: 30,
-                      offset: Offset(0, 10),
-                    )
-                  ]
-                : [],
-          ),
-          child: Column(
-            children: [
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF8B5CF6), Color(0xFF3B82F6)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Colors.black45,
-                      blurRadius: 20,
-                      offset: Offset(0, 8),
-                    )
-                  ],
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final bool isMobile = screenWidth < 600;
+
+    return Column(
+      children: [
+        GestureDetector(
+          onTap: _pickFile,
+          child: MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              padding: EdgeInsets.symmetric(
+                vertical: isMobile ? 36 : 56,
+                horizontal: isMobile ? 20 : 32,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.black.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: _isDragging 
+                      ? const Color(0xFF8B5CF6) 
+                      : Colors.white.withOpacity(0.15),
+                  width: 2,
+                  style: BorderStyle.solid,
                 ),
-                child: const Icon(LucideIcons.uploadCloud, color: Colors.white, size: 28),
+                boxShadow: _isDragging
+                    ? [
+                        const BoxShadow(
+                          color: Color.fromRGBO(139, 92, 246, 0.3),
+                          blurRadius: 30,
+                          offset: Offset(0, 10),
+                        )
+                      ]
+                    : [],
               ),
-              const SizedBox(height: 16),
-              const Text(
-                'Click to upload or drag and drop',
-                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 18),
+              child: Column(
+                children: [
+                  Container(
+                    width: isMobile ? 48 : 56,
+                    height: isMobile ? 48 : 56,
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF8B5CF6), Color(0xFF3B82F6)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(isMobile ? 12 : 16),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Colors.black45,
+                          blurRadius: 20,
+                          offset: Offset(0, 8),
+                        )
+                      ],
+                    ),
+                    child: Icon(LucideIcons.uploadCloud, color: Colors.white, size: isMobile ? 24 : 28),
+                  ),
+                  SizedBox(height: isMobile ? 14 : 16),
+                  Text(
+                    'Click to upload or drag and drop',
+                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: isMobile ? 15 : 18),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'MP4, WebM, or Ogg (max 100MB)',
+                    style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: isMobile ? 12 : 14),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
               ),
-              const SizedBox(height: 8),
-              const Text(
-                'MP4, WebM, or Ogg (max 100MB)',
-                style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 14),
-              ),
-            ],
+            ),
           ),
         ),
-      ),
+        SizedBox(height: isMobile ? 16 : 20),
+        Row(
+          children: [
+            Expanded(
+              child: _buildSecondaryButton(
+                label: 'Record from Camera',
+                icon: LucideIcons.camera,
+                onPressed: _recordVideo,
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
   Widget _buildFileInfoState() {
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final bool isMobile = screenWidth < 600;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Container(
-          padding: const EdgeInsets.all(16),
+          padding: EdgeInsets.all(isMobile ? 12 : 16),
           decoration: BoxDecoration(
             color: Colors.black.withOpacity(0.3),
             borderRadius: BorderRadius.circular(16),
@@ -443,37 +550,44 @@ var request = http.MultipartRequest(
           child: Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(10),
+                padding: EdgeInsets.all(isMobile ? 8 : 10),
                 decoration: BoxDecoration(
                   color: const Color.fromRGBO(139, 92, 246, 0.15),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(LucideIcons.fileVideo, color: Color(0xFF8B5CF6), size: 28),
+                child: Icon(
+                  LucideIcons.fileVideo,
+                  color: const Color(0xFF8B5CF6),
+                  size: isMobile ? 22 : 28,
+                ),
               ),
-              const SizedBox(width: 16),
+              SizedBox(width: isMobile ? 12 : 16),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       _selectedFile!.name,
-                      style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                      style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: isMobile ? 14 : 16,
+                      ),
                       overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 4),
                     Text(
                       _formatFileSize(_selectedFile!.size),
-                      style: const TextStyle(
-                        color: Color(0xFF8B5CF6),
+                      style: TextStyle(
+                        color: const Color(0xFF8B5CF6),
                         fontWeight: FontWeight.w500,
-                        fontSize: 13,
+                        fontSize: isMobile ? 11 : 13,
                       ),
                     ),
                   ],
                 ),
               ),
               IconButton(
-                icon: const Icon(LucideIcons.x, color: Color(0xFF9CA3AF)),
+                icon: Icon(LucideIcons.x, color: const Color(0xFF9CA3AF), size: isMobile ? 20 : 24),
                 onPressed: _clearFile,
                 hoverColor: Colors.red.withOpacity(0.8),
                 highlightColor: Colors.red,
@@ -481,7 +595,7 @@ var request = http.MultipartRequest(
             ],
           ),
         ),
-        const SizedBox(height: 24),
+        SizedBox(height: isMobile ? 18 : 24),
         _buildPrimaryButton(
           label: 'Convert to PDF',
           onPressed: _handleConvert,
@@ -491,27 +605,30 @@ var request = http.MultipartRequest(
   }
 
   Widget _buildProcessingState() {
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final bool isMobile = screenWidth < 600;
+
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 40),
+      padding: EdgeInsets.symmetric(vertical: isMobile ? 24 : 40),
       child: Column(
         children: [
           SizedBox(
-            width: 80,
-            height: 80,
+            width: isMobile ? 60 : 80,
+            height: isMobile ? 60 : 80,
             child: Stack(
               alignment: Alignment.center,
               children: [
-                const SizedBox(
-                  width: 80,
-                  height: 80,
+                SizedBox(
+                  width: isMobile ? 60 : 80,
+                  height: isMobile ? 60 : 80,
                   child: CircularProgressIndicator(
-                    strokeWidth: 3,
-                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF8B5CF6)),
+                    strokeWidth: isMobile ? 2.5 : 3,
+                    valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF8B5CF6)),
                   ),
                 ),
                 Container(
-                  width: 20,
-                  height: 20,
+                  width: isMobile ? 14 : 20,
+                  height: isMobile ? 14 : 20,
                   decoration: const BoxDecoration(
                     color: Color(0xFF3B82F6),
                     shape: BoxShape.circle,
@@ -526,15 +643,16 @@ var request = http.MultipartRequest(
               ],
             ),
           ),
-          const SizedBox(height: 32),
-          const Text(
+          SizedBox(height: isMobile ? 24 : 32),
+          Text(
             'Processing Video',
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: isMobile ? 18 : 22, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'Extracting frames and generating PDF...',
-            style: TextStyle(color: Color(0xFF9CA3AF)),
+            style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: isMobile ? 12 : 14),
+            textAlign: TextAlign.center,
           ),
         ],
       ),
@@ -542,67 +660,95 @@ var request = http.MultipartRequest(
   }
 
   Widget _buildSuccessState() {
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final bool isMobile = screenWidth < 600;
+
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
+      padding: EdgeInsets.symmetric(vertical: isMobile ? 8 : 16),
       child: Column(
         children: [
-          const Icon(
+          Icon(
             LucideIcons.checkCircle,
-            color: Color(0xFF10B981),
-            size: 72,
-            shadows: [
+            color: const Color(0xFF10B981),
+            size: isMobile ? 56 : 72,
+            shadows: const [
               Shadow(
                 color: Color.fromRGBO(16, 185, 129, 0.4),
                 blurRadius: 20,
               )
             ],
           ),
-          const SizedBox(height: 24),
-          const Text(
+          SizedBox(height: isMobile ? 18 : 24),
+          Text(
             'Conversion Complete!',
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: isMobile ? 18 : 22, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 8),
-          const Text(
+          Text(
             'Your document is ready for preview and download.',
-            style: TextStyle(color: Color(0xFF9CA3AF)),
+            style: TextStyle(color: const Color(0xFF9CA3AF), fontSize: isMobile ? 12 : 14),
+            textAlign: TextAlign.center,
           ),
-          const SizedBox(height: 32),
-          Row(
-            children: [
-              Expanded(
-                child: _buildPrimaryButton(
-                  label: 'Preview PDF',
-                  icon: LucideIcons.eye,
-                  onPressed: _handlePreview,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: _buildPrimaryButton(
-                  label: 'Download',
-                  icon: LucideIcons.download,
-                  onPressed: _handleDownload,
-                ),
-              ),
-            ],
+          SizedBox(height: isMobile ? 24 : 32),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isNarrow = constraints.maxWidth < 500;
+              final previewBtn = _buildPrimaryButton(
+                label: 'Preview PDF',
+                icon: LucideIcons.eye,
+                onPressed: _handlePreview,
+              );
+              final downloadBtn = _buildPrimaryButton(
+                label: 'Download',
+                icon: LucideIcons.download,
+                onPressed: _handleDownload,
+              );
+              final shareBtn = _buildPrimaryButton(
+                label: 'Share',
+                icon: LucideIcons.share2,
+                onPressed: _handleShare,
+              );
+
+              if (isNarrow) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    previewBtn,
+                    const SizedBox(height: 12),
+                    downloadBtn,
+                    const SizedBox(height: 12),
+                    shareBtn,
+                  ],
+                );
+              } else {
+                return Row(
+                  children: [
+                    Expanded(child: previewBtn),
+                    const SizedBox(width: 12),
+                    Expanded(child: downloadBtn),
+                    const SizedBox(width: 12),
+                    Expanded(child: shareBtn),
+                  ],
+                );
+              }
+            },
           ),
-          const SizedBox(height: 16),
+          SizedBox(height: isMobile ? 12 : 16),
           SizedBox(
             width: double.infinity,
             child: OutlinedButton(
               onPressed: _clearFile,
               style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 18),
+                padding: EdgeInsets.symmetric(vertical: isMobile ? 12 : 18),
                 side: BorderSide(color: Colors.white.withOpacity(0.08)),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(14),
                 ),
                 foregroundColor: Colors.white,
               ),
-              child: const Text(
+              child: Text(
                 'Convert Another Video',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                style: TextStyle(fontSize: isMobile ? 14 : 16, fontWeight: FontWeight.w600),
               ),
             ),
           ),
@@ -612,6 +758,9 @@ var request = http.MultipartRequest(
   }
 
   Widget _buildPrimaryButton({required String label, required VoidCallback onPressed, IconData? icon}) {
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final bool isMobile = screenWidth < 600;
+
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(14),
@@ -634,26 +783,55 @@ var request = http.MultipartRequest(
           borderRadius: BorderRadius.circular(14),
           onTap: onPressed,
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 18),
+            padding: EdgeInsets.symmetric(vertical: isMobile ? 12 : 18),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 if (icon != null) ...[
-                  Icon(icon, color: Colors.white, size: 20),
-                  const SizedBox(width: 8),
+                  Icon(icon, color: Colors.white, size: isMobile ? 16 : 20),
+                  SizedBox(width: isMobile ? 6 : 8),
                 ],
-                Text(
-                  label,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 16.8,
-                    fontWeight: FontWeight.w600,
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: isMobile ? 14 : 16.8,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ],
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildSecondaryButton({required String label, required IconData icon, required VoidCallback onPressed}) {
+    final double screenWidth = MediaQuery.of(context).size.width;
+    final bool isMobile = screenWidth < 600;
+
+    return OutlinedButton.icon(
+      onPressed: onPressed,
+      icon: Icon(icon, color: Colors.white, size: isMobile ? 18 : 20),
+      label: Text(
+        label,
+        style: TextStyle(
+          fontSize: isMobile ? 14 : 16,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      style: OutlinedButton.styleFrom(
+        padding: EdgeInsets.symmetric(vertical: isMobile ? 12 : 18),
+        side: BorderSide(color: const Color(0xFF8B5CF6).withOpacity(0.4)),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(14),
+        ),
+        foregroundColor: Colors.white,
+        backgroundColor: const Color(0xFF8B5CF6).withOpacity(0.08),
       ),
     );
   }

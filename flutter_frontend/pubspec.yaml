@@ -18,6 +18,9 @@ dependencies:
   lucide_icons: ^0.257.0
   desktop_drop: ^0.4.4
   mime: ^1.0.4
+  share_plus: ^10.0.0
+  path_provider: ^2.1.3
+  image_picker: ^1.1.2
 
 dev_dependencies:
   flutter_test:

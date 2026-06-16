@@ -1,6 +1,38 @@
-INFO:     Will watch for changes in these directories: ['/Users/aryankumar/demo']
-INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
-INFO:     Started reloader process [10665] using StatReload
-INFO:     Started server process [10668]
+INFO:     Started server process [39232]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+STDOUT:
+Processing video...
+Saved unique page: static/sessions/a69d0b783b344e87bae37b816bb305cd/pages/page_1.jpg
+Hash Difference: 26
+Saved unique page: static/sessions/a69d0b783b344e87bae37b816bb305cd/pages/page_2.jpg
+Hash Difference: 24
+Hash Difference: 30
+Saved unique page: static/sessions/a69d0b783b344e87bae37b816bb305cd/pages/page_3.jpg
+Hash Difference: 30
+Hash Difference: 18
+Hash Difference: 24
+Saved unique page: static/sessions/a69d0b783b344e87bae37b816bb305cd/pages/page_4.jpg
+Hash Difference: 26
+Hash Difference: 26
+Hash Difference: 34
+Hash Difference: 26
+Saved unique page: static/sessions/a69d0b783b344e87bae37b816bb305cd/pages/page_5.jpg
+
+Total unique pages: 5
+
+PDF saved as: static/sessions/a69d0b783b344e87bae37b816bb305cd/original.pdf
+
+STDERR:
+
+INFO:     127.0.0.1:55986 - "POST /api/convert HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55986 - "GET /sessions/a69d0b783b344e87bae37b816bb305cd/pages/page_1.jpg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55988 - "GET /sessions/a69d0b783b344e87bae37b816bb305cd/pages/page_2.jpg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55986 - "GET /sessions/a69d0b783b344e87bae37b816bb305cd/pages/page_3.jpg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55986 - "GET /sessions/a69d0b783b344e87bae37b816bb305cd/pages/page_4.jpg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55986 - "GET /sessions/a69d0b783b344e87bae37b816bb305cd/pages/page_5.jpg HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55986 - "OPTIONS /regenerate-pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55986 - "POST /regenerate-pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55991 - "GET /sessions/a69d0b783b344e87bae37b816bb305cd/edited_1781632717.pdf HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55991 - "GET /favicon.ico HTTP/1.1" 200 OK
