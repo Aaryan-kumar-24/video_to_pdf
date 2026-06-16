@@ -383,7 +383,7 @@ class _HomePageState extends State<HomePage> with TickerProviderStateMixin {
             end: Alignment.bottomRight,
           ).createShader(bounds),
           child: Text(
-            'Notes Generator',
+            'Notes bhejo',
             style: TextStyle(
               fontSize: isMobile ? 28 : 40,
               fontWeight: FontWeight.w800,
